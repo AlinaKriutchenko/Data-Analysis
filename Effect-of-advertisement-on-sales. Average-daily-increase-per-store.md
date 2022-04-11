@@ -1,8 +1,8 @@
 ## Effect of advertisement on sales. Average daily increase per store.
 
 
-#### The experiment show the increase of **Coffee** during advertisement period.
-The experiment based on the comparison between control and experiment store group during week with and without advertisement.
+#### The experiment show the changes of **Coffee** sales during advertisement period in comparison to non advertisement period.
+The experiment based on the comparison between control and experiment store groups during weeks with and without advertisement.
 
 
 
@@ -16,7 +16,7 @@ import numpy as np
 
 ```
 ### Load advertisement data and filter 'Coffee' products
-Selection of the data from '****.tbl_silver_ad_reporting' table <br/>
+Selection of data from **'****.tbl_silver_ad_reporting'** table <br/>
 Filtering by: dates, file_location and advertisement name.
 
 ```
@@ -29,7 +29,9 @@ create or replace temporary view temp_ad AS (
       AND ad_name like '%offe%'   
 );
 ```
-Select unique stores participated in the advertisement of 'Coffee' and dates when ad is running to use it later.
+https://docs.databricks.com/spark/2.x/spark-sql/language-manual/select.html
+
+Select unique stores participated in the advertisement of 'Coffee' and dates when ad is running to use it later (for later use)
 ```
 ads = spark.read.table("temp_ad")
 
@@ -67,8 +69,8 @@ create or replace temporary view temp_sale AS (
 );
 ```
 
-### Transform temporary view to spark dataframe. Drop columns used for filtering.
-### Transform string column "local_date" to 'date' type
+**Transform temporary view to spark dataframe. Drop columns used for filtering. <br/>
+Transform string column "local_date" to 'date' type**
 
 ```
 # spark
