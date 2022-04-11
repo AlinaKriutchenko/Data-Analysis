@@ -131,7 +131,7 @@ display(df2)
 
 
 ## Analysis (Calculations)
-**No advertisement period (percentage)**
+#### The mean difference of Coffee sales during **no advertisement** dates (in percentages)
 ```
 no_ads = df2.where(~F.col("date").isin(date_with_ads))
 no_ads = no_ads.toPandas()
@@ -145,11 +145,12 @@ no_ads2 = no_ads['change']
 print(st.norm.interval(alpha=0.95, loc=np.mean(no_ads2), scale=st.sem(no_ads2)))
 no_ads2.mean()
 ```
-
+The mean of Coffee sales during no advertisement dates
 
 <img width="762" alt="Screen Shot 2022-04-11 at 12 41 01 pm 1" src="https://user-images.githubusercontent.com/65950685/162661066-32875e5a-3cae-4a1c-8119-218755661367.png">
 
-**Yes advertisement period (Percentage)**
+## The mean difference of Coffee sales during **advertisement** dates (in percentages)
+
 ```
 yes_ads = df2.where(F.col("date").isin(date_with_ads))
 yes_ads = yes_ads.toPandas()
@@ -168,7 +169,8 @@ yes_ads2.mean()
 <img width="795" alt="Screen Shot 2022-04-11 at 12 41 01 pm 2" src="https://user-images.githubusercontent.com/65950685/162661104-94584f6c-adc6-4f92-92f1-16100fd777bc.png">
 
 
-**Yes advertisement period (number)** <br/>
+## The mean difference of Coffee sales during **advertisement** dates (in numbers)
+ <br/>
 **The Control store is updated:** it multiplied by the percentage difference between the control and experimental store group.
 
 
