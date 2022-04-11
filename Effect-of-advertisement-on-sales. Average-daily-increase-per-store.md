@@ -1,33 +1,23 @@
 ## Effect of advertisement on sales. Average daily increase per store.
 
 
-#### The experiment show the increase of **Hot Drinks** during advertisement period.
+#### The experiment show the increase of **Coffee** during advertisement period.
+The experiment based on the comparison between control and experiment store group during week with and without advertisement.
 
 
-**The plot below shows** the number of items on average sold in the random store per day. <br/>
-**There are two periods (green line):** without advertisement (first period) and with advertisement (second period). <br/>
-**There are two store groups:** control stores and experiment stores.
-
-<img width="400" alt="hot_drinks" src="https://user-images.githubusercontent.com/65950685/160533683-70c5e207-e242-4af0-9ac5-ba2ae6f406e9.png">
-
-**The testing period:** from 2021-07-01 until 2021-08-31 . Ad start date: 2021-07-27 <br/>
-
-In the first period the average daily number of sales in the experimental store group is 7.12% higher and this uplift is compensated for in the second period. <br/>
-
-**The average daily increased** in the number of sold Hot Drinks is 0.12 <br/>
-**The confidence interval:** <br/>
-**Period 1:** 6.71, 7.52 <br/>
-**Period 2:** 6.83, 7.49 <br/>
 
 ### Import Libraries
 ```
 from pyspark.sql.functions import *
 from pyspark.sql.functions import col
 from pyspark.sql import functions as F
-import numpy as np
 import scipy.stats as st
+import numpy as np
+
 ```
-### Load advertisement data and filter 'Hot Drinks'
+### Load advertisement data and filter 'Coffee' products
+Selection of the data from '****.tbl_silver_ad_reporting' table <br/>
+Filtering by: dates, file_location and advertisement name.
 
 ```
 %sql
@@ -39,7 +29,7 @@ create or replace temporary view temp_ad AS (
       AND ad_name like '%offe%'   
 );
 ```
-### Select unique stores participated in the advertisement of 'Hot Drinks' and dates when ad is running:
+Select unique stores participated in the advertisement of 'Coffee' and dates when ad is running to use it later.
 ```
 ads = spark.read.table("temp_ad")
 
@@ -53,14 +43,16 @@ def unique_col_values_to_list(i):
 stores_id_with_ads = unique_col_values_to_list('customer_store_id')
 date_with_ads = unique_col_values_to_list('local_date')
 date_with_ads = [date_obj.strftime('%Y-%m-%d') for date_obj in date_with_ads]
-```
 
-### COMMAND 
-```
+# show
 print(stores_id_with_ads[:5])
 print(date_with_ads[:5])
 ```
-### Load and Filter for 'HOT DRINKS' category during testing period. The 'indicator_for_cancelled_items' filter transactions that have been cancelled.
+
+<img width="776" alt="Screen Shot 2022-04-11 at 11 10 55 am" src="https://user-images.githubusercontent.com/65950685/162649483-d87354b6-134e-4a9b-a396-bd71a9b70321.png">
+
+
+### Load and Filter for 'COFFEE' category during testing period. The 'indicator_for_cancelled_items' filter transactions that have been cancelled.
 ```
 %sql
 create or replace temporary view temp_sale AS (
@@ -69,19 +61,21 @@ create or replace temporary view temp_sale AS (
     FROM ***_**.tbl_silver_pos
     WHERE (local_date like '%202107%' OR
           local_date like '%202108%') 
-      AND fine_category like 'HOT DRINKS' 
+      AND fine_category like 'COFFEE' 
       AND transaction_type = '1001'  
       AND indicator_for_cancelled_items is NULL  
 );
 ```
+
 ### Transform temporary view to spark dataframe. Drop columns used for filtering.
+### Transform string column "local_date" to 'date' type
+
 ```
+# spark
 sales = spark.read.table("temp_sale")
 sales = sales.drop("fine_category", "transaction_type", "indicator_for_cancelled_items", "article_name") 
-```
 
-### Transform string column "local_date" to 'date' type
-```
+# date
 date = sales.select(col("local_date"),to_date(col("local_date"),"yyyyMMdd").alias("date"))
 date = date.dropDuplicates()
 sales = (sales
@@ -90,16 +84,16 @@ sales = (sales
 sales = sales.drop("local_date") 
 ```
 
-### Select sales data using the list with stores from the control store group
+
+### Select data from control and experiment store groups
 ```
+# Experiment group
 sales_no_ads = sales.where(~F.col("site_id").isin(stores_id_with_ads))
 sales_no_ads = (sales_no_ads.groupBy('site_id', 'date').sum()).drop("sum(site_id)", "site_id") 
 sales_no_ads = sales_no_ads.groupBy('date').mean()
 sales_no_ads = sales_no_ads.withColumnRenamed("avg(sum(sales_qty_su_number))","mean_sales_no_ads")
-```
 
-### Select sales data using the list with stores from the experiment store group
-```
+# Store group
 sales_ads = sales.where(F.col("site_id").isin(stores_id_with_ads))
 sales_ads = (sales_ads.groupBy('site_id', 'date').sum()).drop("sum(site_id)", "site_id") 
 sales_ads = sales_ads.groupBy('date').mean()
@@ -122,59 +116,19 @@ df2 = df2.withColumnRenamed("mean_sales_no_ads","control_store")
 df2 = df2.withColumnRenamed("mean_sales_ads","experiment_store")
 display(df2) 
 ```
-### The daily sales per store
+## The result (df2): result and plot:
 
-```
-sales = spark.read.table("temp_sale")
-sales = sales.filter(sales.indicator_for_cancelled_items.isNull())
-sales = sales.drop("fine_category", "transaction_type", "indicator_for_cancelled_items") 
+<img width="600" alt="Screen Shot 2022-04-11 at 11 16 17 am" src="https://user-images.githubusercontent.com/65950685/162652506-93a59be4-cf8a-4839-8057-b4c341de20a5.png">
 
-test = sales.groupBy('site_id', 'local_date').sum()
-test.agg({'sum(sales_qty_su_number)': 'mean'}).show()
+**The plot below shows** the number of items on average sold in the random store per day. <br/>
+**There are two periods (green line):** without advertisement (first period) and with advertisement (second period). <br/>
+**The testing period:** from 2021-07-01 until 2021-08-31 . Ad start date: 2021-07-27 <br/>
 
-```
-### Fuel check for both groups
-
-```
-%sql
-create or replace temporary view temp_fuel AS (
-    SELECT id, has_fuel
-    FROM 711_au.tbl_gold_pos
-    );
-```
-### Line
-```
-fuel = spark.read.table("temp_fuel")
-fuel = fuel.dropDuplicates()
-
-sales_no_ads_for_fuel_only = sales.where(~F.col("site_id").isin(stores_id_with_ads))
-sales_ads_for_fuel_only = sales.where(F.col("site_id").isin(stores_id_with_ads))
-
-no = (sales_no_ads_for_fuel_only
-         .join(fuel, sales_no_ads_for_fuel_only["id"] == fuel["id"])
-         .select(sales_no_ads_for_fuel_only["site_id"], fuel['has_fuel']))
-
-yes = (sales_ads_for_fuel_only
-         .join(fuel, sales_ads_for_fuel_only["id"] == fuel["id"])
-         .select(sales_ads_for_fuel_only["site_id"], fuel['has_fuel']))
-
-no = no.dropDuplicates()
-yes = yes.dropDuplicates()
-display(no.groupBy('has_fuel').count())
-display(yes.groupBy('has_fuel').count())
-
-```
-### Fuel Table
-
-Choice | no ads store |  ads stores |
---- | --- | --- | 
-fuel | 131 | 444 | 
-no fuel | 53 | 83 |
-percentage | 0.29 | 0.16 |
+<img width="500" alt="Screen Shot 2022-04-11 at 11 17 40 am" src="https://user-images.githubusercontent.com/65950685/162652502-26c55166-2144-4121-8fec-878f21bec519.png">
 
 
-
-### No advertisement period
+## Analysis (Calculations)
+**No advertisement period (percentage)**
 ```
 no_ads = df2.where(~F.col("date").isin(date_with_ads))
 no_ads = no_ads.toPandas()
@@ -188,9 +142,11 @@ no_ads2 = no_ads['change']
 print(st.norm.interval(alpha=0.95, loc=np.mean(no_ads2), scale=st.sem(no_ads2)))
 no_ads2.mean()
 ```
-### Yes advertisement period
-### Percentage
 
+
+<img width="762" alt="Screen Shot 2022-04-11 at 12 41 01 pm 1" src="https://user-images.githubusercontent.com/65950685/162661066-32875e5a-3cae-4a1c-8119-218755661367.png">
+
+**Yes advertisement period (Percentage)**
 ```
 yes_ads = df2.where(F.col("date").isin(date_with_ads))
 yes_ads = yes_ads.toPandas()
@@ -205,11 +161,15 @@ yes_ads2 = yes_ads['change']
 print(st.norm.interval(alpha=0.95, loc=np.mean(yes_ads2), scale=st.sem(yes_ads2)))
 yes_ads2.mean()
 ```
-### Yes advertisement period
-### Amount
+
+<img width="795" alt="Screen Shot 2022-04-11 at 12 41 01 pm 2" src="https://user-images.githubusercontent.com/65950685/162661104-94584f6c-adc6-4f92-92f1-16100fd777bc.png">
+
+
+**Yes advertisement period (number)** <br/>
+**The Control store is updated:** it multiplied by the percentage difference between the control and experimental store group.
+
 
 ```
-
 yes_ads_amount = df2.where(F.col("date").isin(date_with_ads))
 yes_ads_amount = yes_ads_amount.toPandas()
 
@@ -222,23 +182,28 @@ print(st.norm.interval(alpha=0.95, loc=np.mean(yes_ads_amount2), scale=st.sem(ye
 yes_ads_amount2.mean()
 
 ```
-### Line
+<img width="774" alt="Screen Shot 2022-04-11 at 12 41 31 pm 1" src="https://user-images.githubusercontent.com/65950685/162661130-b4347b65-c3e4-4bea-ac71-2a304dad45bc.png">
+
+**P-value analysis**
 ```
 print(st.shapiro(yes_ads_amount[['change_number']]))
 print(st.shapiro(yes_ads_amount[['control_store']]))
 print(st.shapiro(yes_ads_amount[['experiment_store']]))
-
-print('')
-
-yes_ads_amount = yes_ads_amount[['control_store', 'experiment_store']]
-# chi-square test
-chiRes = st.chi2_contingency(yes_ads_amount)
+```
+```
 # Details
 print(f'chi-square statistic: {chiRes[0]}')
 print(f'p-value: {chiRes[1]}')
 print(f'degree of freedom: {chiRes[2]}')
 #print('expected contingency table') 
 #print(chiRes[3])
-
-yes_ads_amount2.hist()
 ```
+
+<img width="200" alt="hot_drinks" src="https://user-images.githubusercontent.com/65950685/160533683-70c5e207-e242-4af0-9ac5-ba2ae6f406e9.png">
+
+In the first period the average daily number of sales in the experimental store group is 7.12% higher and this uplift is compensated for in the second period. <br/>
+
+**The average daily increased** in the number of sold Hot Drinks is 0.12 <br/>
+**The confidence interval:** <br/>
+**Period 1:** 6.71, 7.52 <br/>
+**Period 2:** 6.83, 7.49 <br/>
