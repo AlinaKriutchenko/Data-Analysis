@@ -54,7 +54,8 @@ print(date_with_ads[:5])
 <img width="776" alt="Screen Shot 2022-04-11 at 11 10 55 am" src="https://user-images.githubusercontent.com/65950685/162649483-d87354b6-134e-4a9b-a396-bd71a9b70321.png">
 
 
-### Load and Filter for 'COFFEE' category during testing period. The 'indicator_for_cancelled_items' filter transactions that have been cancelled.
+### Load and Filter for 'COFFEE' category during testing period from sales
+The 'indicator_for_cancelled_items' filter transactions that have been cancelled.
 ```
 %sql
 create or replace temporary view temp_sale AS (
@@ -87,7 +88,7 @@ sales = sales.drop("local_date")
 ```
 
 
-### Select data from control and experiment store groups
+**Select data from control and experiment store groups**
 ```
 # Experiment group
 sales_no_ads = sales.where(~F.col("site_id").isin(stores_id_with_ads))
@@ -102,7 +103,7 @@ sales_ads = sales_ads.groupBy('date').mean()
 sales_ads = sales_ads.withColumnRenamed("avg(sum(sales_qty_su_number))","mean_sales_ads")
 ```
 
-### Merge control and experimental
+**Merge control and experimental**
 ```
 data = (sales_no_ads
          .join(sales_ads, sales_no_ads["date"] == sales_ads["date"])
