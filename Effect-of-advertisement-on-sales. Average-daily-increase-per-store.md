@@ -54,7 +54,7 @@ print(date_with_ads[:5])
 <img width="776" alt="Screen Shot 2022-04-11 at 11 10 55 am" src="https://user-images.githubusercontent.com/65950685/162649483-d87354b6-134e-4a9b-a396-bd71a9b70321.png">
 
 
-### Load and Filter for 'COFFEE' category during testing period from sales
+### Load and Filter for 'COFFEE' category during testing period from sales data
 The 'indicator_for_cancelled_items' filter transactions that have been cancelled.
 ```
 %sql
