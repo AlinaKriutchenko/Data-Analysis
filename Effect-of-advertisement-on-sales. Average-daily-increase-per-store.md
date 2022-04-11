@@ -131,7 +131,7 @@ display(df2)
 
 
 ## Analysis (Calculations)
-#### The mean difference of Coffee sales during **no advertisement** dates (in percentages)
+#### The mean difference of Coffee sales during **no advertisement** dates (in percentages): 7.12%
 ```
 no_ads = df2.where(~F.col("date").isin(date_with_ads))
 no_ads = no_ads.toPandas()
@@ -145,11 +145,10 @@ no_ads2 = no_ads['change']
 print(st.norm.interval(alpha=0.95, loc=np.mean(no_ads2), scale=st.sem(no_ads2)))
 no_ads2.mean()
 ```
-The mean of Coffee sales during no advertisement dates
 
 <img width="762" alt="Screen Shot 2022-04-11 at 12 41 01 pm 1" src="https://user-images.githubusercontent.com/65950685/162661066-32875e5a-3cae-4a1c-8119-218755661367.png">
 
-## The mean difference of Coffee sales during **advertisement** dates (in percentages)
+#### The mean difference of Coffee sales during **advertisement** dates (in percentages): 7.16%
 
 ```
 yes_ads = df2.where(F.col("date").isin(date_with_ads))
@@ -169,10 +168,11 @@ yes_ads2.mean()
 <img width="795" alt="Screen Shot 2022-04-11 at 12 41 01 pm 2" src="https://user-images.githubusercontent.com/65950685/162661104-94584f6c-adc6-4f92-92f1-16100fd777bc.png">
 
 
-## The mean difference of Coffee sales during **advertisement** dates (in numbers)
- <br/>
-**The Control store is updated:** it multiplied by the percentage difference between the control and experimental store group.
+#### The mean difference of Coffee sales during **advertisement** dates (in numbers) is 0.12
 
+**The Control store is updated:** it multiplied by the percentage difference between the control and experimental store group.  <br/>
+
+By removing the difference, we can see the actual difference in numbers:
 
 ```
 yes_ads_amount = df2.where(F.col("date").isin(date_with_ads))
@@ -192,19 +192,8 @@ yes_ads_amount2.mean()
 **P-value analysis**
 ```
 print(st.shapiro(yes_ads_amount[['change_number']]))
-print(st.shapiro(yes_ads_amount[['control_store']]))
-print(st.shapiro(yes_ads_amount[['experiment_store']]))
 ```
-```
-# Details
-print(f'chi-square statistic: {chiRes[0]}')
-print(f'p-value: {chiRes[1]}')
-print(f'degree of freedom: {chiRes[2]}')
-#print('expected contingency table') 
-#print(chiRes[3])
-```
-
-<img width="200" alt="hot_drinks" src="https://user-images.githubusercontent.com/65950685/160533683-70c5e207-e242-4af0-9ac5-ba2ae6f406e9.png">
+<img width="583" alt="Screen Shot 2022-04-11 at 12 41 31 pm 3" src="https://user-images.githubusercontent.com/65950685/162675789-283b7d72-cebc-454c-952b-1420f5903c2c.png">
 
 In the first period the average daily number of sales in the experimental store group is 7.12% higher and this uplift is compensated for in the second period. <br/>
 
