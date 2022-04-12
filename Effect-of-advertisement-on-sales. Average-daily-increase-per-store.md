@@ -121,7 +121,7 @@ df2 = df2.withColumnRenamed("mean_sales_no_ads","control_store")
 df2 = df2.withColumnRenamed("mean_sales_ads","experiment_store")
 display(df2) 
 ```
-## The result (df2): result and plot:
+### The result (df2): result and plot:
 
 <img width="600" alt="Screen Shot 2022-04-11 at 11 16 17 am" src="https://user-images.githubusercontent.com/65950685/162652506-93a59be4-cf8a-4839-8057-b4c341de20a5.png">
 
@@ -132,7 +132,7 @@ display(df2)
 <img width="500" alt="Screen Shot 2022-04-11 at 11 17 40 am" src="https://user-images.githubusercontent.com/65950685/162652502-26c55166-2144-4121-8fec-878f21bec519.png">
 
 
-## Analysis (Calculations)
+### Analysis (Calculations)
 #### The mean difference of Coffee sales during **non advertisement** dates (in percentages): 7.12%
 ```
 no_ads = df2.where(~F.col("date").isin(date_with_ads))
