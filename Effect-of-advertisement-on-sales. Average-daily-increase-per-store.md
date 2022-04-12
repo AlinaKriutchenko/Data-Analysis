@@ -1,8 +1,8 @@
 ## Effect of advertisement on sales. Average daily increase per store.
 
 
-#### The experiment show the changes of **Coffee** sales during advertisement period in comparison to non advertisement period.
-The experiment based on the comparison between control and experiment store groups during weeks with and without advertisement.
+**The experiment shows** the changes of **Coffee** sales **during** the advertisement period in comparison to non advertisement period. 
+<br/> **It based on the comparison** between the **control** and **experimental** store groups during weeks with and without advertisement.
 
 
 
@@ -31,7 +31,7 @@ create or replace temporary view temp_ad AS (
 ```
 https://docs.databricks.com/spark/2.x/spark-sql/language-manual/select.html
 
-Select unique stores participated in the advertisement of 'Coffee' and dates when ad is running to use it later (for later use)
+Selection of the unique stores participated in the advertisement of 'Coffee' and the dates when the ad is running. The date is needed for later use.
 ```
 ads = spark.read.table("temp_ad")
 
@@ -55,7 +55,7 @@ print(date_with_ads[:5])
 
 
 ### Load and Filter for 'COFFEE' category during testing period from sales data
-The 'indicator_for_cancelled_items' filter transactions that have been cancelled.
+The 'indicator_for_cancelled_items' filters the transactions that have been cancelled.
 ```
 %sql
 create or replace temporary view temp_sale AS (
@@ -70,8 +70,9 @@ create or replace temporary view temp_sale AS (
 );
 ```
 
-**Transform temporary view to spark dataframe. Drop columns used for filtering. <br/>
-Transform string column "local_date" to 'date' type**
+### Transformation of the temporary view to the spark dataframe. 
+* Removal of the columns used for filtering. <br/>
+* Transform string column "local_date" to 'date' type**
 
 ```
 # spark
@@ -88,7 +89,7 @@ sales = sales.drop("local_date")
 ```
 
 
-**Select data from control and experiment store groups**
+**Selection of the data from control and experiment store groups**
 ```
 # Experiment group
 sales_no_ads = sales.where(~F.col("site_id").isin(stores_id_with_ads))
@@ -103,7 +104,8 @@ sales_ads = sales_ads.groupBy('date').mean()
 sales_ads = sales_ads.withColumnRenamed("avg(sum(sales_qty_su_number))","mean_sales_ads")
 ```
 
-**Merge control and experimental**
+**Merge control and experimental stores**
+* Add a line for ads and non ads period.
 ```
 data = (sales_no_ads
          .join(sales_ads, sales_no_ads["date"] == sales_ads["date"])
@@ -123,7 +125,7 @@ display(df2)
 
 <img width="600" alt="Screen Shot 2022-04-11 at 11 16 17 am" src="https://user-images.githubusercontent.com/65950685/162652506-93a59be4-cf8a-4839-8057-b4c341de20a5.png">
 
-**The plot below shows** the number of items on average sold in the random store per day. <br/>
+**The plot below shows** the number of items sold in the random store per day on average. <br/>
 **There are two periods (green line):** without advertisement (first period) and with advertisement (second period). <br/>
 **The testing period:** from 2021-07-01 until 2021-08-31 . Ad start date: 2021-07-27 <br/>
 
@@ -131,7 +133,7 @@ display(df2)
 
 
 ## Analysis (Calculations)
-#### The mean difference of Coffee sales during **no advertisement** dates (in percentages): 7.12%
+#### The mean difference of Coffee sales during **non advertisement** dates (in percentages): 7.12%
 ```
 no_ads = df2.where(~F.col("date").isin(date_with_ads))
 no_ads = no_ads.toPandas()
@@ -171,6 +173,9 @@ yes_ads2.mean()
 #### The mean difference of Coffee sales during **advertisement** dates (in numbers) is 0.12
 
 **The Control store is updated:** it multiplied by the percentage difference between the control and experimental store group.  <br/>
+* In the first period (no ads) the average daily number of sales in the experimental stores group is 7.12% higher.
+* It is higher at 7.16% in the second period (ads). 
+* This uplift is flattened for in the second period below. <br/>
 
 By removing the difference, we can see the actual difference in numbers:
 
@@ -188,16 +193,21 @@ yes_ads_amount2.mean()
 
 ```
 <img width="774" alt="Screen Shot 2022-04-11 at 12 41 31 pm 1" src="https://user-images.githubusercontent.com/65950685/162661130-b4347b65-c3e4-4bea-ac71-2a304dad45bc.png">
+0.12
 
-**P-value analysis**
+**P-value analysis**  <br/>
+* If the Sig. value of the Shapiro-Wilk Test is greater than 0.05, the data is normal. 
+* If it is below 0.05, the data significantly deviate from a normal distribution. 
+* The test is statistically significant.
 ```
 print(st.shapiro(yes_ads_amount[['change_number']]))
 ```
 <img width="583" alt="Screen Shot 2022-04-11 at 12 41 31 pm 3" src="https://user-images.githubusercontent.com/65950685/162675789-283b7d72-cebc-454c-952b-1420f5903c2c.png">
 
-In the first period the average daily number of sales in the experimental store group is 7.12% higher and this uplift is compensated for in the second period. <br/>
 
-**The average daily increased** in the number of sold Hot Drinks is 0.12 <br/>
+**The average daily increased** in the number of sold Coffee is 0.12 <br/>
 **The confidence interval:** <br/>
 **Period 1:** 6.71, 7.52 <br/>
 **Period 2:** 6.83, 7.49 <br/>
+
+Despite the significant p-value, the average daily increase does not show a satisfactory result.
