@@ -196,7 +196,7 @@ yes_ads_amount2.mean()
 0.12
 
 **P-value analysis**  <br/>
-* If the Sig. value of the Shapiro-Wilk Test is greater than 0.05, the data is normal. 
+* If the Sig. value of the Shapiro-Wilk test is greater than 0.05, the data is normal. 
 * If it is below 0.05, the data significantly deviate from a normal distribution. 
 * The test is statistically significant.
 ```
